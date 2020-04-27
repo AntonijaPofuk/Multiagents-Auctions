@@ -10,7 +10,7 @@ import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import java.util.concurrent.ThreadLocalRandom;
-
+//aded new comment
 public class BuyerAgent extends Agent {
 	private String targetItemTitle;
 	private int budget;
