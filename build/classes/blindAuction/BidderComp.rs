@@ -1,0 +1,4 @@
+blindAuction.ReceiveItemAsWinnerComp
+blindAuction.ReceiveINFORMComp
+blindAuction.BidderComp
+blindAuction.ReceiveCFPAsComp

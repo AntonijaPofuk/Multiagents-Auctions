@@ -1,0 +1,6 @@
+blindAuction.ReceiveBids
+blindAuction.ActionPerMinute
+blindAuction.SendCFP
+blindAuction.AnnounceWinnerAndUpdateCatalogue
+blindAuction.Auctioneer
+blindAuction.FindBidder
