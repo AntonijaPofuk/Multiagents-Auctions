@@ -1,4 +1,0 @@
-blindAuction.BidderHuman
-blindAuction.ReceiveCFPHuman
-blindAuction.ReceiveINFORMHuman
-blindAuction.ReceiveItemAsWinnerHuman
