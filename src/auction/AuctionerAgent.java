@@ -16,9 +16,10 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * Created by Bruno Vitorino on 03/07/16.
+ * @author: Antonija Pofuk
  */
 public class AuctionerAgent extends Agent {
+
     private AID[] bidderAgents;
 
     private String itemName;
@@ -26,19 +27,15 @@ public class AuctionerAgent extends Agent {
 
     @Override
     protected void setup() {
-        System.out.println("Auction Seller Agent ready for service!");
-
+        System.out.println("*********************Auction is ready!*********************");
         Object[] args = getArguments();
         if (args != null && args.length > 0) {
             itemName = (String) args[0];
             itemPrice = Integer.parseInt((String) args[1]);
-
-            System.out.println("This time I'm selling the item \"" + itemName + "\" with the starting price of " + itemPrice);
-            System.out.println("Please make your bids!");
-
+            System.out.println("Name of item: \"" + itemName + "\". Price: " + itemPrice);
+            System.out.println("Place bids...");
 
             // Add behaviour to get the buyers bids
-
 //            addBehaviour(new TickerBehaviour(this, 30000) {
 //                @Override
 //                protected void onTick() {
@@ -64,7 +61,6 @@ public class AuctionerAgent extends Agent {
 //                    myAgent.addBehaviour(new AuctionPerformer());
 //                }
 //            });
-
             addBehaviour(new OneShotBehaviour() {
                 @Override
                 public void action() {
@@ -78,8 +74,9 @@ public class AuctionerAgent extends Agent {
                         DFAgentDescription[] result = DFService.search(myAgent, template);
 
                         bidderAgents = new AID[result.length];
+                        System.out.println("Found agents:");
                         for (int i = 0; i < result.length; i++) {
-                            System.out.println("Found seller: " + result[i].getName());
+                            System.out.println("Agent " + result[i].getName());
 
                             bidderAgents[i] = result[i].getName();
                         }
@@ -97,6 +94,7 @@ public class AuctionerAgent extends Agent {
     }
 
     private class AuctionPerformer extends Behaviour {
+
         private int step = 0;
         private Map<AID, Integer> receivedProposals = new HashMap<AID, Integer>();
         private int numExpectedProposals = 0;
@@ -197,17 +195,14 @@ public class AuctionerAgent extends Agent {
                     }
 
                     // Send accept proposal to the highest bidder
-
                     ACLMessage accept = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
                     accept.addReceiver(highestBidder);
                     accept.setContent(itemName + "||" + highestBid);
                     accept.setConversationId("auction");
                     accept.setReplyWith("bid-ok" + System.currentTimeMillis());
-
                     myAgent.send(accept);
 
                     // Reject the rest of the proposals
-
                     receivedProposals.keySet().stream()
                             .filter(aid -> aid != highestBidder && receivedProposals.get(aid) != null)
                             .forEach(aid -> {
@@ -224,7 +219,7 @@ public class AuctionerAgent extends Agent {
                     break;
                 case 3:
 
-                    System.out.println("Do I hear $" + String.valueOf(highestBid * 1.5) + "??");
+                    System.out.println("Highest bid: " + String.valueOf(highestBid));
 
                     if (roundsWithNoOffers != 0) {
                         System.out.println(highestBid + " " + roundsWithNoOffers);
@@ -238,8 +233,7 @@ public class AuctionerAgent extends Agent {
                     break;
                 case 4:
 
-                    System.out.println("Sold to the gentelman " + highestBidder.getName() + " for $" + highestBid);
-
+                    System.out.println("Sold to: " + highestBidder.getName() + " for " + highestBid + " points.");
                     // TODO: Send message to bidder to inform it won the auction
 
                     step = 5;

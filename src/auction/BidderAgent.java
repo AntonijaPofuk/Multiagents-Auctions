@@ -12,9 +12,10 @@ import jade.lang.acl.MessageTemplate;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Created by Bruno Vitorino on 03/07/16.
+ * @author: Antonija Pofuk
  */
 public class BidderAgent extends Agent {
+
     private int wallet;
 
     @Override
@@ -37,13 +38,12 @@ public class BidderAgent extends Agent {
         } catch (FIPAException e) {
             e.printStackTrace();
         }
-        System.out.println(getAID().getName() + " ready to buy some stuff. My wallet is $" + wallet);
+        System.out.println(getAID().getName() + " is ready. My budget:" + wallet);
     }
 
     private void setRandomWallet() {
-        int min = 10000;
-        int max = Integer.MAX_VALUE;
-
+        int min = 10;
+        int max = 1000;
         wallet = ThreadLocalRandom.current().nextInt(min, max);
     }
 
@@ -54,11 +54,11 @@ public class BidderAgent extends Agent {
         } catch (FIPAException e) {
             e.printStackTrace();
         }
-
-        System.out.println("Bidder " + getAID().getName() + " terminating");
+        System.out.println("Agent " + getAID().getName() + "is stepping away...");
     }
 
     private class BidRequestsServer extends Behaviour {
+
         private String itemName;
         private Integer itemPrice;
 
@@ -67,22 +67,25 @@ public class BidderAgent extends Agent {
             MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
             ACLMessage msg = myAgent.receive();
 
+            if (wallet <= 0) {
+                System.out.println("No budget left");
+                myAgent.doDelete();
+            }
             if (msg != null) {
                 parseContent(msg.getContent());
 
                 ACLMessage reply = msg.createReply();
                 int bid;
 
-                if (itemPrice < wallet / 4) {
-                    // Place a bid 5 to 10% higher than the received value
+                if (itemPrice < (wallet / 4)) {
+                    // Place a bid higher than the received value
                     bid = (int) (itemPrice + itemPrice * ((float) ThreadLocalRandom.current().nextInt(5, 10) / 10));
-
                     reply.setPerformative(ACLMessage.PROPOSE);
                     reply.setContent(String.valueOf(bid));
                 } else {
                     reply.setPerformative(ACLMessage.REFUSE);
+                    System.out.println(getAID().getName() + " doesnt have enough budget to bid. ---BUDGET: (" + wallet + ")---");
                 }
-
                 myAgent.send(reply);
             } else {
                 block();
@@ -91,7 +94,6 @@ public class BidderAgent extends Agent {
 
         private void parseContent(String content) {
             String[] split = content.split("\\|\\|");
-
             itemName = split[0];
             itemPrice = Integer.parseInt(split[1]);
         }
