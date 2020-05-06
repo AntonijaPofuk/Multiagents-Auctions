@@ -77,7 +77,6 @@ public class AuctionerAgent extends Agent {
                         System.out.println("Found agents:");
                         for (int i = 0; i < result.length; i++) {
                             System.out.println("Agent " + result[i].getName());
-
                             bidderAgents[i] = result[i].getName();
                         }
                     } catch (FIPAException e) {

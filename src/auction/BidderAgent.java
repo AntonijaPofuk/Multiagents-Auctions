@@ -17,6 +17,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class BidderAgent extends Agent {
 
     private int wallet;
+    private int randomBid;
 
     @Override
     protected void setup() {
@@ -38,13 +39,19 @@ public class BidderAgent extends Agent {
         } catch (FIPAException e) {
             e.printStackTrace();
         }
-        System.out.println(getAID().getName() + " is ready. My budget:" + wallet);
+        System.out.println(getName() + " is ready. My budget:" + wallet);
     }
 
     private void setRandomWallet() {
         int min = 10;
         int max = 1000;
         wallet = ThreadLocalRandom.current().nextInt(min, max);
+    }
+    
+     private void setRandomBid() {
+        int min = 10;
+        int max = 50;
+        randomBid = ThreadLocalRandom.current().nextInt(min, max);
     }
 
     @Override
@@ -73,18 +80,18 @@ public class BidderAgent extends Agent {
             }
             if (msg != null) {
                 parseContent(msg.getContent());
-
                 ACLMessage reply = msg.createReply();
                 int bid;
-
-                if (itemPrice < (wallet / 4)) {
-                    // Place a bid higher than the received value
-                    bid = (int) (itemPrice + itemPrice * ((float) ThreadLocalRandom.current().nextInt(5, 10) / 10));
+                if (itemPrice < (wallet)) {
+                    setRandomBid();
+                    System.out.println("Random bid+ for " + myAgent.getLocalName()+ " is: " + randomBid + " points.");
+                    bid = (int) (itemPrice + randomBid);
+                    System.out.println("Bid for " + myAgent.getLocalName()+ " is: " + bid + " points.");
                     reply.setPerformative(ACLMessage.PROPOSE);
                     reply.setContent(String.valueOf(bid));
                 } else {
                     reply.setPerformative(ACLMessage.REFUSE);
-                    System.out.println(getAID().getName() + " doesnt have enough budget to bid. ---BUDGET: (" + wallet + ")---");
+                    System.out.println(myAgent.getLocalName() + " doesnt have enough budget to bid. ---BUDGET: (" + wallet + ")---");
                 }
                 myAgent.send(reply);
             } else {
