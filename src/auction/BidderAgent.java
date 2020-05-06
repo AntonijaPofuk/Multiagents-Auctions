@@ -23,7 +23,6 @@ public class BidderAgent extends Agent {
     protected void setup() {
 
         setRandomWallet();
-
         addBehaviour(new BidRequestsServer());
 
         // Register the auction-seller service in the yellow pages
@@ -68,6 +67,7 @@ public class BidderAgent extends Agent {
 
         private String itemName;
         private Integer itemPrice;
+        private Integer biggestPrice;
 
         @Override
         public void action() {
@@ -80,6 +80,9 @@ public class BidderAgent extends Agent {
             }
             if (msg != null) {
                 parseContent(msg.getContent());
+                
+                System.out.println(msg.getContent());
+                
                 ACLMessage reply = msg.createReply();
                 int bid;
                 if (itemPrice < (wallet)) {

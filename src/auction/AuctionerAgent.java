@@ -113,17 +113,17 @@ public class AuctionerAgent extends Agent {
                     receivedProposals = new HashMap<AID, Integer>();
                     numExpectedProposals = 0;
 
-                    // Send the item being sold and the starting bidding price
+                    // Send the item being on auction and the starting bidding 
                     ACLMessage cfp = new ACLMessage(ACLMessage.CFP);
 
                     for (int i = 0; i < bidderAgents.length; i++) {
                         if (highestBidder == null || (highestBidder != null && bidderAgents[i].compareTo(highestBidder) != 0)) {
                             cfp.addReceiver(bidderAgents[i]);
-
                             numExpectedProposals++;
                         }
                     }
 
+                    //comunication!!!!!!!!!!!!!!
                     if (highestBidder != null) {
                         cfp.setContent(itemName + "||" + highestBid);
                     } else {
@@ -234,6 +234,16 @@ public class AuctionerAgent extends Agent {
 
                     System.out.println("Sold to: " + highestBidder.getName() + " for " + highestBid + " points.");
                     // TODO: Send message to bidder to inform it won the auction
+                    cfp = new ACLMessage(ACLMessage.CFP);
+                    cfp.addReceiver(highestBidder);
+                    cfp.setContent("Content: " + itemName + "||" + highestBid);
+                    cfp.setConversationId("auction");
+                    cfp.setReplyWith("cfp" + System.currentTimeMillis());
+                    myAgent.send(cfp);
+                    mt = MessageTemplate.and(
+                            MessageTemplate.MatchConversationId("auction"),
+                            MessageTemplate.MatchInReplyTo(cfp.getReplyWith()));
+
 
                     step = 5;
                     break;
