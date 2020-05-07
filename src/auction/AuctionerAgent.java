@@ -10,7 +10,6 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -121,24 +120,17 @@ public class AuctionerAgent extends Agent {
                             numExpectedProposals++;
                         }
                     }
-
-                    //comunication!!!!!!!!!!!!!!
                     if (highestBidder != null) {
                         cfp.setContent(itemName + "-" + highestBid + "-" + 0);
                     } else {
                         cfp.setContent(itemName + "-" + itemPrice+ "-" + 0);
                     }
-
                     cfp.setConversationId("auction");
                     cfp.setReplyWith("cfp" + System.currentTimeMillis());
-
                     myAgent.send(cfp);
-
-                    // Prepare the message template to deal with the bidding proposals
                     mt = MessageTemplate.and(
                             MessageTemplate.MatchConversationId("auction"),
                             MessageTemplate.MatchInReplyTo(cfp.getReplyWith()));
-
                     step = 1;
                     break;
                 case 1:
@@ -150,32 +142,25 @@ public class AuctionerAgent extends Agent {
                             case ACLMessage.PROPOSE:
                                 // This is a bid
                                 receivedProposals.put(reply.getSender(), Integer.parseInt(reply.getContent()));
-
                                 System.out.println(reply.getSender().getName() + " bids " + reply.getContent());
-
                                 // Reinitialize if there are offers
                                 roundsWithNoOffers = 0;
-
                                 break;
                             case ACLMessage.REFUSE:
                                 // The agent is not interested in the item
                                 receivedProposals.put(reply.getSender(), null);
-
                                 // Increment the amount of rounds with no offers
                                 roundsWithNoOffers++;
                                 break;
                         }
-
                         if (receivedProposals.size() == numExpectedProposals) {
                             step = 2;
                         }
-
                     } else {
                         block();
                     }
                     break;
                 case 2:
-
                     // Checks bids and save the highest one
                     Iterator<Map.Entry<AID, Integer>> iter = receivedProposals.entrySet().iterator();
                     while (iter.hasNext()) {
@@ -185,13 +170,11 @@ public class AuctionerAgent extends Agent {
                             highestBid = item.getValue();
                         }
                     }
-
                     if (highestBidder != null) {
                         System.out.println("Highest bid so far: " + highestBid + " for " + highestBidder.getName());
                     } else {
                         System.out.println("Only received invalid bids!");
                     }
-
                     // Send accept proposal to the highest bidder
                     ACLMessage accept = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
                     accept.addReceiver(highestBidder);
@@ -199,7 +182,6 @@ public class AuctionerAgent extends Agent {
                     accept.setConversationId("auction");
                     accept.setReplyWith("bid-ok" + System.currentTimeMillis());
                     myAgent.send(accept);
-
                     // Reject the rest of the proposals
                     receivedProposals.keySet().stream()
                             .filter(aid -> aid != highestBidder && receivedProposals.get(aid) != null)
@@ -209,7 +191,6 @@ public class AuctionerAgent extends Agent {
                                 reject.setContent(itemName + "-" + receivedProposals.get(aid)+ "-" + 0);
                                 reject.setConversationId("auction");
                                 reject.setReplyWith("bid-reject" + System.currentTimeMillis());
-
                                 myAgent.send(reject);
                             });
 
@@ -218,11 +199,9 @@ public class AuctionerAgent extends Agent {
                 case 3:
 
                     System.out.println("Highest bid: " + String.valueOf(highestBid));
-
                     if (roundsWithNoOffers != 0) {
                         System.out.println(highestBid + " " + roundsWithNoOffers);
                     }
-
                     if (roundsWithNoOffers == 3) {
                         step = 4;
                     } else {
