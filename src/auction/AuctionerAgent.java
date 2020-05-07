@@ -81,7 +81,6 @@ public class AuctionerAgent extends Agent {
                     } catch (FIPAException e) {
                         e.printStackTrace();
                     }
-
                     myAgent.addBehaviour(new AuctionPerformer());
                 }
             });
@@ -123,7 +122,7 @@ public class AuctionerAgent extends Agent {
                     if (highestBidder != null) {
                         cfp.setContent(itemName + "-" + highestBid + "-" + 0);
                     } else {
-                        cfp.setContent(itemName + "-" + itemPrice+ "-" + 0);
+                        cfp.setContent(itemName + "-" + itemPrice + "-" + 0);
                     }
                     cfp.setConversationId("auction");
                     cfp.setReplyWith("cfp" + System.currentTimeMillis());
@@ -135,9 +134,7 @@ public class AuctionerAgent extends Agent {
                     break;
                 case 1:
                     ACLMessage reply = myAgent.receive(mt);
-
                     if (reply != null) {
-
                         switch (reply.getPerformative()) {
                             case ACLMessage.PROPOSE:
                                 // This is a bid
@@ -171,7 +168,7 @@ public class AuctionerAgent extends Agent {
                         }
                     }
                     if (highestBidder != null) {
-                        System.out.println("Highest bid so far: " + highestBid + " for " + highestBidder.getName());
+                        System.out.println("Highest bid so far: " + highestBid + " for " + highestBidder.getLocalName().toUpperCase());
                     } else {
                         System.out.println("Only received invalid bids!");
                     }
@@ -188,7 +185,7 @@ public class AuctionerAgent extends Agent {
                             .forEach(aid -> {
                                 ACLMessage reject = new ACLMessage(ACLMessage.REJECT_PROPOSAL);
                                 reject.addReceiver(highestBidder);
-                                reject.setContent(itemName + "-" + receivedProposals.get(aid)+ "-" + 0);
+                                reject.setContent(itemName + "-" + receivedProposals.get(aid) + "-" + 0);
                                 reject.setConversationId("auction");
                                 reject.setReplyWith("bid-reject" + System.currentTimeMillis());
                                 myAgent.send(reject);
@@ -197,8 +194,6 @@ public class AuctionerAgent extends Agent {
                     step = 3;
                     break;
                 case 3:
-
-                    System.out.println("Highest bid: " + String.valueOf(highestBid));
                     if (roundsWithNoOffers != 0) {
                         System.out.println(highestBid + " " + roundsWithNoOffers);
                     }

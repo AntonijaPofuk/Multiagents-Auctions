@@ -20,7 +20,6 @@ public class BidderAgent extends Agent {
 
     @Override
     protected void setup() {
-
         setRandomWallet();
         addBehaviour(new BidRequestsServer());
         DFAgentDescription dfd = new DFAgentDescription();
@@ -35,7 +34,7 @@ public class BidderAgent extends Agent {
         } catch (FIPAException e) {
             e.printStackTrace();
         }
-        System.out.println(getName() + " is ready. My budget:" + wallet);
+        System.out.println(getName().toUpperCase() + " is ready. My budget:" + wallet);
     }
 
     private void setRandomWallet() {
@@ -57,7 +56,7 @@ public class BidderAgent extends Agent {
         } catch (FIPAException e) {
             e.printStackTrace();
         }
-        System.out.println("Agent " + getAID().getName() + "is stepping away...");
+        System.out.println("Agent " + getAID().getName().toUpperCase() + "is stepping away...");
     }
 
     private class BidRequestsServer extends Behaviour {
@@ -70,7 +69,6 @@ public class BidderAgent extends Agent {
         public void action() {
             MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
             ACLMessage msg = myAgent.receive();
-
             if (wallet <= 0) {
                 System.out.println("No budget left...");
                 myAgent.doDelete();
@@ -79,25 +77,22 @@ public class BidderAgent extends Agent {
                 parseContent(msg.getContent());
                 ACLMessage reply = msg.createReply();
                 int bid;
+                setRandomBid();
+                bid = (int) (itemPrice + randomBid);
                 if (itemPrice < (wallet)) {
-                    setRandomBid();
-                    bid = (int) (itemPrice + randomBid);
-                    System.out.println("Bid for " + myAgent.getLocalName() + " is: " + bid + " points.");
+
                     reply.setPerformative(ACLMessage.PROPOSE);
                     reply.setContent(String.valueOf(bid));
-                                        
-                    if (!itemWinPrice.equalsIgnoreCase("0")) {                    
+                    if (!itemWinPrice.equalsIgnoreCase("0")) {
                         wallet = wallet - itemPrice;
-                        System.out.println(myAgent.getLocalName() + ": Preostalo mi je " + wallet);
+                        System.out.println("------------------------------------------------------");
+                        System.out.println(myAgent.getLocalName().toUpperCase() + ": I have left " + wallet + "points.");
                     }
-                                        
                 } else {
                     reply.setPerformative(ACLMessage.REFUSE);
-                    System.out.println(myAgent.getLocalName() + " doesnt have enough budget to bid. ---BUDGET: (" + wallet + ")---");
+                    System.out.println(myAgent.getLocalName().toUpperCase() + " doesnt have enough budget to bid. ---BUDGET: (" + wallet + ")---");
                 }
                 myAgent.send(reply);
-                System.out.println(itemWinPrice);
-
             } else {
                 block();
             }
