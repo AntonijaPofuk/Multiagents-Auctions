@@ -8,8 +8,11 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import jade.lang.acl.UnreadableException;
 
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author: Antonija Pofuk
@@ -46,8 +49,8 @@ public class BidderAgent extends Agent {
         int max = 1000;
         wallet = ThreadLocalRandom.current().nextInt(min, max);
     }
-    
-     private void setRandomBid() {
+
+    private void setRandomBid() {
         int min = 10;
         int max = 50;
         randomBid = ThreadLocalRandom.current().nextInt(min, max);
@@ -67,7 +70,7 @@ public class BidderAgent extends Agent {
 
         private String itemName;
         private Integer itemPrice;
-        private Integer biggestPrice;
+        private String itemWinPrice;
 
         @Override
         public void action() {
@@ -80,32 +83,46 @@ public class BidderAgent extends Agent {
             }
             if (msg != null) {
                 parseContent(msg.getContent());
-                
-                System.out.println(msg.getContent());
-                
+
+                System.out.println("Bidder " + msg.getContent());
+
                 ACLMessage reply = msg.createReply();
                 int bid;
                 if (itemPrice < (wallet)) {
                     setRandomBid();
-                    System.out.println("Random bid+ for " + myAgent.getLocalName()+ " is: " + randomBid + " points.");
+                    System.out.println("Random bid+ for " + myAgent.getLocalName() + " is: " + randomBid + " points.");
                     bid = (int) (itemPrice + randomBid);
-                    System.out.println("Bid for " + myAgent.getLocalName()+ " is: " + bid + " points.");
+                    System.out.println("Bid for " + myAgent.getLocalName() + " is: " + bid + " points.");
                     reply.setPerformative(ACLMessage.PROPOSE);
                     reply.setContent(String.valueOf(bid));
+                    
+                    
+                    if (itemWinPrice.equalsIgnoreCase("0")) {
+                        System.out.println(myAgent.getLocalName() + "Nismo winali!");
+                    } else {
+                        System.out.println("Pobijedio je " + myAgent.getLocalName() + itemPrice);
+                        wallet = wallet - itemPrice;
+                        System.out.println(myAgent.getLocalName() + ": Preostalo mi je " + wallet);
+                    }
+                    
+                    
                 } else {
                     reply.setPerformative(ACLMessage.REFUSE);
                     System.out.println(myAgent.getLocalName() + " doesnt have enough budget to bid. ---BUDGET: (" + wallet + ")---");
                 }
                 myAgent.send(reply);
+                System.out.println(itemWinPrice);
+
             } else {
                 block();
             }
         }
 
         private void parseContent(String content) {
-            String[] split = content.split("\\|\\|");
+            String[] split = content.split("-");
             itemName = split[0];
             itemPrice = Integer.parseInt(split[1]);
+            itemWinPrice = split[2];
         }
 
         @Override

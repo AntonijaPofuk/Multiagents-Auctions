@@ -101,7 +101,6 @@ public class AuctionerAgent extends Agent {
         private MessageTemplate mt;
         private AID highestBidder = null;
         private int highestBid = 0;
-
         private int roundsWithNoOffers = 0;
 
         @Override
@@ -125,9 +124,9 @@ public class AuctionerAgent extends Agent {
 
                     //comunication!!!!!!!!!!!!!!
                     if (highestBidder != null) {
-                        cfp.setContent(itemName + "||" + highestBid);
+                        cfp.setContent(itemName + "-" + highestBid + "-" + 0);
                     } else {
-                        cfp.setContent(itemName + "||" + itemPrice);
+                        cfp.setContent(itemName + "-" + itemPrice+ "-" + 0);
                     }
 
                     cfp.setConversationId("auction");
@@ -196,7 +195,7 @@ public class AuctionerAgent extends Agent {
                     // Send accept proposal to the highest bidder
                     ACLMessage accept = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
                     accept.addReceiver(highestBidder);
-                    accept.setContent(itemName + "||" + highestBid);
+                    accept.setContent(itemName + "-" + highestBid + "-" + 0);
                     accept.setConversationId("auction");
                     accept.setReplyWith("bid-ok" + System.currentTimeMillis());
                     myAgent.send(accept);
@@ -207,7 +206,7 @@ public class AuctionerAgent extends Agent {
                             .forEach(aid -> {
                                 ACLMessage reject = new ACLMessage(ACLMessage.REJECT_PROPOSAL);
                                 reject.addReceiver(highestBidder);
-                                reject.setContent(itemName + "||" + receivedProposals.get(aid));
+                                reject.setContent(itemName + "-" + receivedProposals.get(aid)+ "-" + 0);
                                 reject.setConversationId("auction");
                                 reject.setReplyWith("bid-reject" + System.currentTimeMillis());
 
@@ -231,20 +230,17 @@ public class AuctionerAgent extends Agent {
                     }
                     break;
                 case 4:
-
                     System.out.println("Sold to: " + highestBidder.getName() + " for " + highestBid + " points.");
                     // TODO: Send message to bidder to inform it won the auction
                     cfp = new ACLMessage(ACLMessage.CFP);
                     cfp.addReceiver(highestBidder);
-                    cfp.setContent("Content: " + itemName + "||" + highestBid);
+                    cfp.setContent("Content: " + itemName + "-" + highestBid + "-" + highestBid);
                     cfp.setConversationId("auction");
                     cfp.setReplyWith("cfp" + System.currentTimeMillis());
                     myAgent.send(cfp);
                     mt = MessageTemplate.and(
                             MessageTemplate.MatchConversationId("auction"),
                             MessageTemplate.MatchInReplyTo(cfp.getReplyWith()));
-
-
                     step = 5;
                     break;
             }
