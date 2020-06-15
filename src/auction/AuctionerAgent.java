@@ -23,9 +23,9 @@ public class AuctionerAgent extends Agent {
 
     private String itemName;
     private Integer itemPrice;
-
+    
     @Override
-    protected void setup() {
+    protected void setup() {                                
         System.out.println("*********************Auction is ready!*********************");
         Object[] args = getArguments();
         if (args != null && args.length > 0) {
@@ -34,44 +34,15 @@ public class AuctionerAgent extends Agent {
             System.out.println("Name of item: \"" + itemName + "\". Price: " + itemPrice);
             System.out.println("Place bids...");
 
-            // Add behaviour to get the buyers bids
-//            addBehaviour(new TickerBehaviour(this, 30000) {
-//                @Override
-//                protected void onTick() {
-//                    // Get all the BidderAgents
-//                    DFAgentDescription template = new DFAgentDescription();
-//                    ServiceDescription sd = new ServiceDescription();
-//                    sd.setType("auction-bidder");
-//                    template.addServices(sd);
-//
-//                    try {
-//                        DFAgentDescription[] result = DFService.search(myAgent, template);
-//
-//                        bidderAgents = new AID[result.length];
-//                        for (int i = 0; i < result.length; i++) {
-//                            System.out.println("Found seller: " + result[i].getName());
-//
-//                            bidderAgents[i] = result[i].getName();
-//                        }
-//                    } catch (FIPAException e) {
-//                        e.printStackTrace();
-//                    }
-//
-//                    myAgent.addBehaviour(new AuctionPerformer());
-//                }
-//            });
             addBehaviour(new OneShotBehaviour() {
                 @Override
                 public void action() {
-                    // Get all the BidderAgents
                     DFAgentDescription template = new DFAgentDescription();
                     ServiceDescription sd = new ServiceDescription();
                     sd.setType("auction-bidder");
-                    template.addServices(sd);
-
+                    template.addServices(sd);                    
                     try {
                         DFAgentDescription[] result = DFService.search(myAgent, template);
-
                         bidderAgents = new AID[result.length];
                         System.out.println("Found agents:");
                         for (int i = 0; i < result.length; i++) {
@@ -91,28 +62,20 @@ public class AuctionerAgent extends Agent {
     }
 
     private class AuctionPerformer extends Behaviour {
-
         private int step = 0;
         private Map<AID, Integer> receivedProposals = new HashMap<AID, Integer>();
         private int numExpectedProposals = 0;
-
         private MessageTemplate mt;
         private AID highestBidder = null;
         private int highestBid = 0;
         private int roundsWithNoOffers = 0;
-
         @Override
         public void action() {
-//            System.out.println("Step: " + step);
             switch (step) {
                 case 0:
-                    // Reinitialize the expected proposals
                     receivedProposals = new HashMap<AID, Integer>();
                     numExpectedProposals = 0;
-
-                    // Send the item being on auction and the starting bidding 
                     ACLMessage cfp = new ACLMessage(ACLMessage.CFP);
-
                     for (int i = 0; i < bidderAgents.length; i++) {
                         if (highestBidder == null || (highestBidder != null && bidderAgents[i].compareTo(highestBidder) != 0)) {
                             cfp.addReceiver(bidderAgents[i]);
@@ -137,16 +100,12 @@ public class AuctionerAgent extends Agent {
                     if (reply != null) {
                         switch (reply.getPerformative()) {
                             case ACLMessage.PROPOSE:
-                                // This is a bid
                                 receivedProposals.put(reply.getSender(), Integer.parseInt(reply.getContent()));
                                 System.out.println(reply.getSender().getName() + " bids " + reply.getContent());
-                                // Reinitialize if there are offers
                                 roundsWithNoOffers = 0;
                                 break;
                             case ACLMessage.REFUSE:
-                                // The agent is not interested in the item
                                 receivedProposals.put(reply.getSender(), null);
-                                // Increment the amount of rounds with no offers
                                 roundsWithNoOffers++;
                                 break;
                         }
@@ -158,7 +117,6 @@ public class AuctionerAgent extends Agent {
                     }
                     break;
                 case 2:
-                    // Checks bids and save the highest one
                     Iterator<Map.Entry<AID, Integer>> iter = receivedProposals.entrySet().iterator();
                     while (iter.hasNext()) {
                         Map.Entry<AID, Integer> item = iter.next();
@@ -172,14 +130,12 @@ public class AuctionerAgent extends Agent {
                     } else {
                         System.out.println("Only received invalid bids!");
                     }
-                    // Send accept proposal to the highest bidder
                     ACLMessage accept = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
                     accept.addReceiver(highestBidder);
                     accept.setContent(itemName + "-" + highestBid + "-" + 0);
                     accept.setConversationId("auction");
                     accept.setReplyWith("bid-ok" + System.currentTimeMillis());
                     myAgent.send(accept);
-                    // Reject the rest of the proposals
                     receivedProposals.keySet().stream()
                             .filter(aid -> aid != highestBidder && receivedProposals.get(aid) != null)
                             .forEach(aid -> {
@@ -205,7 +161,6 @@ public class AuctionerAgent extends Agent {
                     break;
                 case 4:
                     System.out.println("Sold to: " + highestBidder.getName() + " for " + highestBid + " points.");
-                    // TODO: Send message to bidder to inform it won the auction
                     cfp = new ACLMessage(ACLMessage.CFP);
                     cfp.addReceiver(highestBidder);
                     cfp.setContent("Content: " + itemName + "-" + highestBid + "-" + highestBid);
@@ -219,7 +174,6 @@ public class AuctionerAgent extends Agent {
                     break;
             }
         }
-
         @Override
         public boolean done() {
             return (step == 5);

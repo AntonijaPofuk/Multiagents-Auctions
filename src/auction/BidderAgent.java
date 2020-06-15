@@ -19,7 +19,7 @@ public class BidderAgent extends Agent {
     private int randomBid;
 
     @Override
-    protected void setup() {
+    protected void setup() {  
         setRandomWallet();
         addBehaviour(new BidRequestsServer());
         DFAgentDescription dfd = new DFAgentDescription();
@@ -28,7 +28,6 @@ public class BidderAgent extends Agent {
         sd.setType("auction-bidder");
         sd.setName("MultiAgentSystem-auctions");
         dfd.addServices(sd);
-
         try {
             DFService.register(this, dfd);
         } catch (FIPAException e) {
@@ -80,7 +79,6 @@ public class BidderAgent extends Agent {
                 setRandomBid();
                 bid = (int) (itemPrice + randomBid);
                 if (itemPrice < (wallet)) {
-
                     reply.setPerformative(ACLMessage.PROPOSE);
                     reply.setContent(String.valueOf(bid));
                     if (!itemWinPrice.equalsIgnoreCase("0")) {
